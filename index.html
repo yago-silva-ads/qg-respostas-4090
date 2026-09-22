@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>QG Respostas 4090 — Live Feed</title>
+<title>QG Respostas 4090 — Live</title>
 <style>
   :root{
     --bg:#0a0e1a; --card:#121829; --card2:#1a2138; --line:#26304d;
@@ -27,7 +27,7 @@
   .kpi.verde{border-color:var(--verde)} .kpi.amar{border-color:var(--amar)}
   .kpi.verm{border-color:var(--verm)} .kpi.rox{border-color:var(--rox)}
   .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
-  .tab{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 14px;cursor:pointer;font-size:13px;color:var(--mut);display:flex;align-items:center;gap:6px}
+  .tab{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 14px;cursor:pointer;font-size:13px;color:var(--mut);display:flex;align-items:center;gap:6px;user-select:none}
   .tab.active{background:var(--azul);color:#fff;border-color:var(--azul)}
   .tab .n{background:rgba(255,255,255,.15);border-radius:20px;padding:1px 8px;font-size:12px}
   .item{background:var(--card);border-radius:12px;padding:14px 16px;margin-bottom:10px;border-left:3px solid var(--line)}
@@ -40,11 +40,16 @@
   .tag.POTENCIAL,.tag.COORDENADOR_POTENCIAL,.tag.COLETIVO_POTENCIAL{background:rgba(245,158,11,.18);color:var(--amar)}
   .tag.CONTRA{background:rgba(239,68,68,.18);color:var(--verm)}
   .tag.NEUTRO{background:rgba(139,151,179,.15);color:var(--mut)}
+  .st{font-size:10px;font-weight:700;padding:2px 7px;border-radius:6px}
+  .st.RESPONDIDO{background:rgba(34,197,94,.18);color:var(--verde)}
+  .st.PENDENTE{background:rgba(245,158,11,.18);color:var(--amar)}
+  .st.CURTIDO{background:rgba(59,130,246,.18);color:var(--azul)}
+  .st.IGNORADO,.st.ERRO{background:rgba(139,151,179,.15);color:var(--mut)}
   .plat{font-size:11px;color:var(--mut)}
   .txt{font-size:14px;color:var(--txt);line-height:1.45}
-  .resp{margin-top:8px;padding:10px 12px;background:var(--card2);border-radius:8px;font-size:13px;color:#cfe0ff;border-left:2px solid var(--azul)}
-  .meta{font-size:11px;color:var(--mut);margin-top:6px;display:flex;gap:12px;flex-wrap:wrap}
-  a.link{color:var(--azul);text-decoration:none;font-size:12px}
+  .meta{font-size:11px;color:var(--mut);margin-top:6px;display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+  a.link{color:var(--azul);text-decoration:none}
+  .rel{color:var(--amar)}
   .hidden{display:none}
   .loading{text-align:center;color:var(--mut);padding:40px}
   .err{background:rgba(239,68,68,.1);border:1px solid var(--verm);border-radius:10px;padding:14px;color:#ffd9d9;font-size:13px;margin-bottom:16px}
@@ -58,33 +63,27 @@
   <div class="sub" id="sub">Carregando dados da planilha…</div>
 
   <div class="flow">
-    🤖 <b>Fluxo automático ativo</b> — o Cérebro IA lê comentários, gera respostas com IA (Groq) e grava na planilha <b>a cada 30 min</b>. Este painel reflete os dados reais em tempo real.
+    🤖 <b>Fluxo automático ativo</b> — o Cérebro IA lê comentários, classifica com IA e responde os apoiadores <b>a cada 30 min</b>. Painel em tempo real direto da planilha.
   </div>
 
   <div class="err hidden" id="err"></div>
-
   <div class="kpis" id="kpis"></div>
-
   <div class="tabs" id="tabs"></div>
   <div id="feed"><div class="loading">⏳ Buscando comentários…</div></div>
 
 <script>
 const SHEET_ID = "1XqxOih0RSSMWXA7X3DPYOt3_xk0jK9yjlLpq0-qsyME";
 const TAB = "COMENTARIOS";
-// endpoint gviz -> CSV (funciona se a planilha estiver com "qualquer pessoa com o link: leitor")
 const URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(TAB)}`;
 
 const ALVO = ["APOIADOR","VOTO_DECLARADO","POTENCIAL","COORDENADOR_POTENCIAL","COLETIVO_POTENCIAL"];
 
 function parseCSV(text){
-  // parser simples que respeita aspas
   const rows=[]; let row=[], cur="", q=false;
   for(let i=0;i<text.length;i++){
     const c=text[i];
-    if(q){
-      if(c==='"'){ if(text[i+1]==='"'){cur+='"';i++;} else q=false; }
-      else cur+=c;
-    }else{
+    if(q){ if(c==='"'){ if(text[i+1]==='"'){cur+='"';i++;} else q=false; } else cur+=c; }
+    else{
       if(c==='"')q=true;
       else if(c===','){row.push(cur);cur="";}
       else if(c==='\n'){row.push(cur);rows.push(row);row=[];cur="";}
@@ -95,73 +94,97 @@ function parseCSV(text){
   if(cur.length||row.length){row.push(cur);rows.push(row);}
   return rows;
 }
-
+function esc(s){return (s||"").replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
 function kpi(v,l,cls){return `<div class="kpi ${cls}"><div class="v">${v.toLocaleString('pt-BR')}</div><div class="l">${l}</div></div>`;}
+
+let ELEG=[], iCls,iNome,iTxt,iRel,iAcao,iAcaoR,iPlat,iPerma,iLink,iData;
+
+function statusDe(r){
+  const ar=(r[iAcaoR]||"").trim().toUpperCase();
+  if(ar==="RESPONDIDO")return "RESPONDIDO";
+  const a=(r[iAcao]||"").trim().toUpperCase();
+  if(a.startsWith("ERRO"))return "ERRO";
+  if(a==="PENDENTE")return "PENDENTE";
+  if(a==="CURTIDO")return "CURTIDO";
+  if(a==="IGNORADO")return "IGNORADO";
+  return a||"—";
+}
+
+function render(filtro){
+  const feed=document.getElementById("feed");
+  let list=ELEG.slice();
+  if(filtro==="RESPONDIDO")list=list.filter(r=>statusDe(r)==="RESPONDIDO");
+  else if(filtro==="PENDENTE")list=list.filter(r=>statusDe(r)==="PENDENTE");
+  list.reverse();
+  if(!list.length){feed.innerHTML='<div class="loading">Nada aqui ainda.</div>';return;}
+  feed.innerHTML=list.slice(0,150).map(r=>{
+    const cls=(r[iCls]||"").trim().toUpperCase();
+    const nome=(r[iNome]||"Anônimo").trim()||"Anônimo";
+    const plat=(r[iPlat]||"").trim();
+    const txt=(r[iTxt]||"").trim();
+    const rel=(r[iRel]||"").trim();
+    const dt=(r[iData]||"").trim().slice(0,10);
+    const st=statusDe(r);
+    const perma=(r[iPerma]||"").trim();
+    const link=(r[iLink]||"").trim();
+    const url=/^https?:/.test(perma)?perma:(/^https?:/.test(link)?link:"");
+    const linkHtml=url?`<a class="link" href="${esc(url)}" target="_blank">🔗 Responder</a>`:"";
+    const relHtml=rel&&!isNaN(rel)?`<span class="rel">★ ${rel}</span>`:"";
+    return `<div class="item ${cls}">
+      <div class="ihead"><b>${esc(nome)}</b> <span class="tag ${cls}">${cls}</span> <span class="st ${st}">${st}</span> <span class="plat">${esc(plat)} · ${dt}</span></div>
+      <div class="txt">${esc(txt)}</div>
+      <div class="meta">${relHtml}${linkHtml}</div>
+    </div>`;
+  }).join("");
+}
 
 fetch(URL).then(r=>{if(!r.ok)throw new Error("HTTP "+r.status);return r.text();}).then(csv=>{
   const rows=parseCSV(csv);
   const head=rows[0].map(h=>h.trim());
   const idx=n=>head.indexOf(n);
-  const iCls=idx("classificacao"), iAcao=idx("acao_realizada"),
-        iResp=idx("relevancia_score"), iTxt=idx("mensagem")>=0?idx("mensagem"):idx("comentario"),
-        iNome=idx("autor_nome")>=0?idx("autor_nome"):idx("nome"),
-        iPlat=idx("plataforma"), iPerma=idx("permalink")>=0?idx("permalink"):idx("link_responder"),
-        iData=idx("data_comentario")>=0?idx("data_comentario"):idx("data_hora");
+  iCls=idx("classificacao"); iNome=idx("nome"); iTxt=idx("comentario");
+  iRel=idx("relevancia"); iAcao=idx("acao"); iAcaoR=idx("acao_realizada");
+  iPlat=idx("plataforma"); iPerma=idx("permalink"); iLink=idx("link_responder");
+  iData=idx("data_hora");
 
-  const data=rows.slice(1).filter(r=>r.length>3);
-  let respondido=0, elegiveis=0, semResp=0, contra=0, apoiador=0;
-  const enviados=[];
+  const data=rows.slice(1).filter(r=>r.length>5);
+  ELEG=data.filter(r=>ALVO.includes((r[iCls]||"").trim().toUpperCase()));
+
+  let apoiador=0,contra=0,resp=0,pend=0;
   data.forEach(r=>{
-    const cls=(r[iCls]||"").trim().toUpperCase();
-    const acao=(r[iAcao]||"").trim().toUpperCase();
-    if(cls==="CONTRA")contra++;
-    if(cls==="APOIADOR")apoiador++;
-    if(ALVO.includes(cls)){
-      elegiveis++;
-      if(acao==="RESPONDIDO"){respondido++; enviados.push(r);}
-      else semResp++;
-    }
+    const c=(r[iCls]||"").trim().toUpperCase();
+    if(c==="APOIADOR"||c==="VOTO_DECLARADO")apoiador++;
+    if(c==="CONTRA")contra++;
   });
+  ELEG.forEach(r=>{const s=statusDe(r); if(s==="RESPONDIDO")resp++; else if(s==="PENDENTE")pend++;});
 
-  const sub=document.getElementById("sub");
-  sub.textContent=`Atualizado agora · ${data.length.toLocaleString('pt-BR')} comentários na base · ${new Date().toLocaleString('pt-BR')}`;
+  document.getElementById("sub").textContent=
+    `Atualizado ${new Date().toLocaleString('pt-BR')} · ${data.length.toLocaleString('pt-BR')} comentários na base`;
 
   document.getElementById("kpis").innerHTML=
-    kpi(respondido,"Respostas enviadas","verde")+
-    kpi(semResp,"Na fila (aguardando)","amar")+
+    kpi(resp,"Respondidos","verde")+
+    kpi(pend,"Pendentes na fila","amar")+
     kpi(apoiador,"Apoiadores","verde")+
-    kpi(elegiveis,"Elegíveis p/ resposta","rox")+
-    kpi(contra,"Contrários (monitorar)","verm")+
+    kpi(ELEG.length,"Elegíveis p/ resposta","rox")+
+    kpi(contra,"Contrários","verm")+
     kpi(data.length,"Total captado","azul");
 
-  // Feed: enviados mais recentes primeiro
-  enviados.reverse();
-  const feed=document.getElementById("feed");
-  if(!enviados.length){feed.innerHTML='<div class="loading">Nenhuma resposta enviada ainda — o fluxo vai preencher isto nos próximos ciclos.</div>';}
-  else{
-    feed.innerHTML=enviados.slice(0,100).map(r=>{
-      const cls=(r[iCls]||"").trim().toUpperCase();
-      const nome=(r[iNome]||"Anônimo").trim()||"Anônimo";
-      const plat=(r[iPlat]||"").trim();
-      const txt=(r[iTxt]||"").trim();
-      const resp=iResp>=0?(r[iResp]||"").trim():"";
-      const perma=iPerma>=0?(r[iPerma]||"").trim():"";
-      const dt=(r[iData]||"").trim().slice(0,10);
-      const respHtml=(resp && isNaN(resp))?`<div class="resp">💬 ${resp}</div>`:"";
-      const linkHtml=/^https?:/.test(perma)?`<a class="link" href="${perma}" target="_blank">🔗 Abrir comentário</a>`:"";
-      return `<div class="item ${cls}">
-        <div class="ihead"><b>${nome}</b> <span class="tag ${cls}">${cls}</span> <span class="plat">${plat} · ${dt}</span></div>
-        <div class="txt">${txt}</div>${respHtml}
-        <div class="meta">${linkHtml}</div>
-      </div>`;
-    }).join("");
-  }
+  const tabs=[["ALL","Todos elegíveis",ELEG.length],["PENDENTE","Pendentes",pend],["RESPONDIDO","Respondidos",resp]];
+  document.getElementById("tabs").innerHTML=tabs.map((t,i)=>
+    `<div class="tab ${i===0?'active':''}" data-f="${t[0]}">${t[1]} <span class="n">${t[2]}</span></div>`).join("");
+  document.querySelectorAll(".tab").forEach(el=>el.onclick=()=>{
+    document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+    el.classList.add("active"); render(el.dataset.f);
+  });
+
+  render("ALL");
 }).catch(e=>{
   document.getElementById("sub").textContent="";
   const err=document.getElementById("err");
   err.classList.remove("hidden");
-  err.innerHTML=`⚠️ Não consegui ler a planilha ao vivo (${e.message}).<br>
-  Para o painel funcionar, a planilha precisa estar com <b>"Qualquer pessoa com o link: Leitor"</b> (ou publicada na web). No Google Sheets: <b>Compartilhar → Acesso geral → Qualquer pessoa com o link → Leitor</b>.`;
+  err.innerHTML=`⚠️ Não consegui ler a planilha ao vivo (${esc(e.message)}).<br>
+  <b>Isto pode acontecer só no preview do app (sandbox).</b> Hospedado no GitHub Pages costuma funcionar.<br>
+  Se persistir hospedado: Google Sheets → <b>Compartilhar → Acesso geral → Qualquer pessoa com o link → Leitor</b>.`;
   document.getElementById("feed").innerHTML="";
 });
 </script>
