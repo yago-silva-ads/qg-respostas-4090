@@ -106,11 +106,15 @@ function linkDe(r){
   if(pm.startsWith("http"))return{url:pm,label:"Abrir post",ig:true};
   return{url:"",label:"",ig:false};
 }
+const MC_KW=["4090","parabéns","parabens","meu voto","apoio","concordo","tamo junto","conta comigo","quero participar","excelente","mandou bem","arrasou","luciano da luz","meu deputado","lucianodaluz","eu participo","mandato coletivo","quero fazer parte","quero o material"];
 function fonteDe(r){
   const f=(r[I.fonte]||"").trim().toUpperCase();
   if(f.includes("MANYCHAT"))return "MANYCHAT";
   // resposta enviada pelo fluxo n8n / Cerebro IA
   if((r[I.acaoR]||"").trim().toUpperCase()==="RESPONDIDO")return "N8N";
+  // ManyChat responde por keyword no comentario
+  const t=(r[I.txt]||"").toLowerCase();
+  if(MC_KW.some(k=>t.includes(k)))return "MANYCHAT";
   return "";
 }
 function temResposta(r){return (r[I.acaoR]||"").trim().toUpperCase()==="RESPONDIDO"}
