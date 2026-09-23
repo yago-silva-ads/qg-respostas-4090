@@ -90,17 +90,20 @@ function parseCSV(t){const rows=[];let row=[],cur="",q=false;for(let i=0;i<t.len
 function esc(s){return(s||"").replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 function kpi(v,l,cls){return `<div class="kpi ${cls||''}"><div class="v">${(+v).toLocaleString('pt-BR')}</div><div class="l">${l}</div></div>`}
 
-let ROWS=[],I={},TAB="RESP";
+let ROWS=[],I={},TAB="RESP",POST2PERMA={};
 function linkDe(r){
   const plat=(r[I.plat]||"").trim().toLowerCase();
   const lr=(r[I.link]||"").trim(),post=(r[I.post]||"").trim(),cid=(r[I.cid]||"").trim(),perma=(r[I.perma]||"").trim();
   if(plat==="facebook"){
     if(lr.startsWith("http"))return{url:lr,label:"Ver comentário",ig:false};
-    if(post&&cid)return{url:`https://www.facebook.com/${PAGE_ID}_${post}?comment_id=${post}_${cid}`,label:"Ver comentário",ig:false};
+    // post_id e comment_id ja vem com o page/post embutido — usar como estao
+    if(post&&cid)return{url:`https://www.facebook.com/${post}?comment_id=${cid}`,label:"Ver comentário",ig:false};
     return{url:"",label:"",ig:false};
   }
-  if(perma.startsWith("http")&&cid)return{url:`${perma.replace(/\/$/,"")}/c/${cid}/`,label:"Ver comentário",ig:true};
-  if(perma.startsWith("http"))return{url:perma,label:"Abrir post",ig:true};
+  let pm=perma;
+  if(!pm.startsWith("http")&&post&&POST2PERMA[post])pm=POST2PERMA[post];
+  if(pm.startsWith("http")&&cid)return{url:`${pm.replace(/\/$/,"")}/c/${cid}/`,label:"Ver comentário",ig:true};
+  if(pm.startsWith("http"))return{url:pm,label:"Abrir post",ig:true};
   return{url:"",label:"",ig:false};
 }
 function fonteDe(r){
@@ -123,6 +126,7 @@ function render(){
     if(TAB==="MANYCHAT"&&fonteDe(r)!=="MANYCHAT")return false;
     if(TAB==="N8N"&&fonteDe(r)!=="N8N")return false;
     if(q){const t=((r[I.nome]||"")+(r[I.txt]||"")).toLowerCase();if(!t.includes(q))return false}
+    if(!linkDe(r).url)return false; // esconde os sem link (pedido do usuario)
     return true;
   });
   list.reverse();
@@ -147,6 +151,9 @@ function carregar(){
        data:ix("data_hora"),resp:ix("relevancia_score"),fonte:ix("fonte"),acaoR:ix("acao_realizada"),
        link:ix("link_responder"),perma:ix("permalink"),post:ix("post_id"),cid:ix("comment_id")};
     ROWS=rows.slice(1).filter(r=>r.length>5);
+    // Mapa post_id -> permalink (recupera link de IG que nao tem permalink proprio)
+    POST2PERMA={};
+    ROWS.forEach(r=>{const pl=(r[I.plat]||"").trim().toLowerCase();const pm=(r[I.perma]||"").trim();const po=(r[I.post]||"").trim();if(pl==="instagram"&&pm.indexOf("http")===0&&po)POST2PERMA[po]=pm;});
 
     const respN8N=ROWS.filter(r=>fonteDe(r)==="N8N").length;
     const respMC=ROWS.filter(r=>fonteDe(r)==="MANYCHAT").length;
