@@ -99,10 +99,12 @@
 /* ===== LOGIN (senha simples, igual ao site anterior) ===== */
 const SENHA = "luciano4090";
 const gate=document.getElementById("gate"), app=document.getElementById("app");
+function storeGet(k){try{return sessionStorage.getItem(k);}catch(e){return null;}}
+function storeSet(k,v){try{sessionStorage.setItem(k,v);}catch(e){}}
 function tentarEntrar(){
   const v=document.getElementById("pwd").value.trim();
   if(v===SENHA){
-    sessionStorage.setItem("qg_ok","1");
+    storeSet("qg_ok","1");
     gate.style.display="none"; app.style.display="block"; carregar();
   }else{
     document.getElementById("gmsg").textContent="Senha incorreta.";
@@ -110,7 +112,7 @@ function tentarEntrar(){
 }
 document.getElementById("enter").onclick=tentarEntrar;
 document.getElementById("pwd").addEventListener("keydown",e=>{if(e.key==="Enter")tentarEntrar();});
-if(sessionStorage.getItem("qg_ok")==="1"){gate.style.display="none";app.style.display="block";}
+if(storeGet("qg_ok")==="1"){gate.style.display="none";app.style.display="block";}
 
 /* ===== DADOS ===== */
 const SHEET_ID = "1XqxOih0RSSMWXA7X3DPYOt3_xk0jK9yjlLpq0-qsyME";
@@ -240,7 +242,7 @@ function carregar(){
 }
 
 /* se já estava logado nesta sessão, carrega direto */
-if(sessionStorage.getItem("qg_ok")==="1") carregar();
+if(storeGet("qg_ok")==="1") carregar();
 </script>
 </body>
 </html>
