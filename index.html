@@ -1,44 +1,35 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8">
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>QG Respostas 4090 — Live</title>
+<title>QG Respostas 4090 — Rastreabilidade</title>
 <style>
-  :root{
-    --bg:#0a0e1a; --card:#121829; --card2:#1a2138; --line:#26304d;
-    --txt:#e7ecf5; --mut:#8b97b3; --azul:#3b82f6; --verde:#22c55e;
-    --amar:#f59e0b; --verm:#ef4444; --rox:#8b5cf6;
-  }
+  :root{--bg:#0a0e1a;--card:#121829;--card2:#1a2138;--line:#26304d;--txt:#e7ecf5;--mut:#8b97b3;--azul:#3b82f6;--verde:#22c55e;--amar:#f59e0b;--verm:#ef4444;--rox:#8b5cf6;--rosa:#ec4899}
   *{box-sizing:border-box;margin:0;padding:0}
   body{font-family:system-ui,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--txt);padding:20px;max-width:1100px;margin:0 auto}
-  /* ----- tela de login ----- */
   #gate{position:fixed;inset:0;background:#070b16;display:flex;align-items:center;justify-content:center;z-index:999}
   .gatebox{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:34px 30px;width:340px;max-width:90vw;text-align:center}
-  .gatebox h2{font-size:18px;margin-bottom:6px}
-  .gatebox p{color:var(--mut);font-size:13px;margin-bottom:18px}
+  .gatebox h2{font-size:18px;margin-bottom:6px} .gatebox p{color:var(--mut);font-size:13px;margin-bottom:18px}
   .gatebox input{width:100%;padding:12px;border-radius:10px;border:1px solid var(--line);background:#0e1424;color:var(--txt);font-size:15px;margin-bottom:12px}
   .gatebox button{width:100%;padding:12px;border:0;border-radius:10px;background:var(--azul);color:#fff;font-size:15px;font-weight:700;cursor:pointer}
   .gatebox .msg{color:var(--verm);font-size:12px;height:16px;margin-top:8px}
   #app{display:none}
   .top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:6px}
-  h1{font-size:22px;display:flex;align-items:center;gap:10px}
-  .live{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--verde);border:1px solid var(--verde);border-radius:20px;padding:3px 10px}
+  h1{font-size:22px} .live{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--verde);border:1px solid var(--verde);border-radius:20px;padding:3px 10px}
   .dot{width:8px;height:8px;border-radius:50%;background:var(--verde);animation:pulse 1.6s infinite}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
   .sub{color:var(--mut);font-size:13px;margin-bottom:18px}
-  .flow{background:linear-gradient(90deg,#12213a,#131a2e);border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin-bottom:18px;font-size:13px;color:var(--mut);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-  .flow b{color:var(--verde)}
-  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:22px}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px}
   .kpi{background:var(--card);border-radius:14px;padding:16px;border-left:4px solid var(--azul)}
-  .kpi .v{font-size:28px;font-weight:800}
-  .kpi .l{color:var(--mut);font-size:11px;text-transform:uppercase;letter-spacing:.6px;margin-top:2px}
-  .kpi.verde{border-color:var(--verde)} .kpi.amar{border-color:var(--amar)}
-  .kpi.verm{border-color:var(--verm)} .kpi.rox{border-color:var(--rox)}
-  .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
-  .tab{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 14px;cursor:pointer;font-size:13px;color:var(--mut);display:flex;align-items:center;gap:6px;user-select:none}
+  .kpi .v{font-size:26px;font-weight:800} .kpi .l{color:var(--mut);font-size:11px;text-transform:uppercase;letter-spacing:.5px;margin-top:3px}
+  .kpi.verde{border-color:var(--verde)} .kpi.amar{border-color:var(--amar)} .kpi.rosa{border-color:var(--rosa)} .kpi.rox{border-color:var(--rox)}
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+  .tab{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 14px;cursor:pointer;font-size:13px;color:var(--mut)}
   .tab.active{background:var(--azul);color:#fff;border-color:var(--azul)}
-  .tab .n{background:rgba(255,255,255,.15);border-radius:20px;padding:1px 8px;font-size:12px}
+  .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+  .toolbar input,.toolbar select{padding:8px 12px;border-radius:8px;border:1px solid var(--line);background:#0e1424;color:var(--txt);font-size:13px}
+  .toolbar input{flex:1;min-width:180px}
   .item{background:var(--card);border-radius:12px;padding:14px 16px;margin-bottom:10px;border-left:3px solid var(--line)}
   .item.APOIADOR,.item.VOTO_DECLARADO{border-left-color:var(--verde)}
   .item.POTENCIAL,.item.COORDENADOR_POTENCIAL,.item.COLETIVO_POTENCIAL{border-left-color:var(--amar)}
@@ -47,202 +38,140 @@
   .tag{font-size:10px;font-weight:700;padding:2px 7px;border-radius:6px;text-transform:uppercase}
   .tag.APOIADOR,.tag.VOTO_DECLARADO{background:rgba(34,197,94,.18);color:var(--verde)}
   .tag.POTENCIAL,.tag.COORDENADOR_POTENCIAL,.tag.COLETIVO_POTENCIAL{background:rgba(245,158,11,.18);color:var(--amar)}
-  .tag.CONTRA{background:rgba(239,68,68,.18);color:var(--verm)}
-  .tag.NEUTRO{background:rgba(139,151,179,.15);color:var(--mut)}
-  .st{font-size:10px;font-weight:700;padding:2px 7px;border-radius:6px}
-  .st.RESPONDIDO{background:rgba(34,197,94,.18);color:var(--verde)}
-  .st.PENDENTE{background:rgba(245,158,11,.18);color:var(--amar)}
-  .st.CURTIDO{background:rgba(59,130,246,.18);color:var(--azul)}
-  .st.IGNORADO,.st.ERRO{background:rgba(139,151,179,.15);color:var(--mut)}
+  .tag.CONTRA{background:rgba(239,68,68,.18);color:var(--verm)} .tag.NEUTRO{background:rgba(139,151,179,.15);color:var(--mut)}
+  .src{font-size:10px;font-weight:700;padding:2px 7px;border-radius:6px}
+  .src.N8N{background:rgba(139,92,246,.18);color:var(--rox)} .src.MANYCHAT{background:rgba(236,72,153,.18);color:var(--rosa)}
   .plat{font-size:11px;color:var(--mut)}
-  .txt{font-size:14px;color:var(--txt);line-height:1.45}
+  .txt{font-size:14px;line-height:1.45}
+  .resp{margin-top:8px;padding:10px 12px;background:var(--card2);border-radius:8px;font-size:13px;color:#cfe0ff;border-left:2px solid var(--azul)}
   .meta{font-size:11px;color:var(--mut);margin-top:6px;display:flex;gap:12px;flex-wrap:wrap;align-items:center}
-  a.link{color:var(--azul);text-decoration:none;font-weight:600}
-  a.link.ig{color:var(--amar)}
+  a.link{color:var(--azul);text-decoration:none;font-weight:600} a.link.ig{color:var(--amar)}
   .nolink{color:var(--mut);font-style:italic}
-  .rel{color:var(--amar)}
-  .hidden{display:none}
-  .loading{text-align:center;color:var(--mut);padding:40px}
   .err{background:rgba(239,68,68,.1);border:1px solid var(--verm);border-radius:10px;padding:14px;color:#ffd9d9;font-size:13px;margin-bottom:16px}
+  .loading{text-align:center;color:var(--mut);padding:40px}
+  .hidden{display:none}
 </style>
 </head>
 <body>
+  <div id="gate"><div class="gatebox">
+    <h2>🔒 QG Respostas 4090</h2><p>Painel restrito. Digite a senha.</p>
+    <input type="password" id="pwd" placeholder="Senha"><button id="enter">Entrar</button>
+    <div class="msg" id="gmsg"></div>
+  </div></div>
 
-  <!-- ===== TELA DE LOGIN ===== -->
-  <div id="gate">
-    <div class="gatebox">
-      <h2>🔒 QG Respostas 4090</h2>
-      <p>Painel restrito da campanha. Digite a senha de acesso.</p>
-      <input type="password" id="pwd" placeholder="Senha" autocomplete="current-password">
-      <button id="enter">Entrar</button>
-      <div class="msg" id="gmsg"></div>
-    </div>
-  </div>
-
-  <!-- ===== APP ===== -->
   <div id="app">
-    <div class="top">
-      <h1>🗳️ QG Respostas 4090</h1>
-      <span class="live"><span class="dot"></span> LIVE</span>
-    </div>
-    <div class="sub" id="sub">Carregando dados da planilha…</div>
-    <div class="flow">
-      🤖 <b>Fluxo automático ativo</b> — o Cérebro IA lê comentários, classifica com IA e responde os apoiadores <b>a cada 30 min</b>. Painel em tempo real direto da planilha.
-    </div>
+    <div class="top"><h1>📨 QG Respostas 4090 — Rastreabilidade</h1><span class="live"><span class="dot"></span> LIVE</span></div>
+    <div class="sub" id="sub">Carregando…</div>
     <div class="err hidden" id="err"></div>
     <div class="kpis" id="kpis"></div>
     <div class="tabs" id="tabs"></div>
-    <div id="feed"><div class="loading">⏳ Buscando comentários…</div></div>
+    <div class="toolbar">
+      <input id="busca" placeholder="Buscar autor ou texto…">
+      <select id="fPlat"><option value="">Toda plataforma</option><option>Facebook</option><option>Instagram</option></select>
+    </div>
+    <div id="feed"><div class="loading">⏳ Carregando…</div></div>
   </div>
 
 <script>
-/* ===== LOGIN (senha simples, igual ao site anterior) ===== */
-const SENHA = "luciano4090";
-const gate=document.getElementById("gate"), app=document.getElementById("app");
-function storeGet(k){try{return sessionStorage.getItem(k);}catch(e){return null;}}
-function storeSet(k,v){try{sessionStorage.setItem(k,v);}catch(e){}}
-function tentarEntrar(){
-  const v=document.getElementById("pwd").value.trim();
-  if(v===SENHA){
-    storeSet("qg_ok","1");
-    gate.style.display="none"; app.style.display="block"; carregar();
-  }else{
-    document.getElementById("gmsg").textContent="Senha incorreta.";
-  }
-}
-document.getElementById("enter").onclick=tentarEntrar;
-document.getElementById("pwd").addEventListener("keydown",e=>{if(e.key==="Enter")tentarEntrar();});
-if(storeGet("qg_ok")==="1"){gate.style.display="none";app.style.display="block";}
+const SENHA="luciano4090";
+const gate=document.getElementById("gate"),app=document.getElementById("app");
+function sGet(k){try{return sessionStorage.getItem(k)}catch(e){return null}}
+function sSet(k,v){try{sessionStorage.setItem(k,v)}catch(e){}}
+function entrar(){if(document.getElementById("pwd").value.trim()===SENHA){sSet("qg_ok","1");gate.style.display="none";app.style.display="block";carregar()}else document.getElementById("gmsg").textContent="Senha incorreta."}
+document.getElementById("enter").onclick=entrar;
+document.getElementById("pwd").addEventListener("keydown",e=>{if(e.key==="Enter")entrar()});
+if(sGet("qg_ok")==="1"){gate.style.display="none";app.style.display="block"}
 
-/* ===== DADOS ===== */
-const SHEET_ID = "1XqxOih0RSSMWXA7X3DPYOt3_xk0jK9yjlLpq0-qsyME";
-const TAB = "COMENTARIOS";
-const URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(TAB)}`;
-const PAGE_ID = "656539144216536";
-const ALVO = ["APOIADOR","VOTO_DECLARADO","POTENCIAL","COORDENADOR_POTENCIAL","COLETIVO_POTENCIAL"];
+const SHEET_ID="1XqxOih0RSSMWXA7X3DPYOt3_xk0jK9yjlLpq0-qsyME";
+const CSV=t=>`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(t)}`;
+const PAGE_ID="656539144216536";
 
-function parseCSV(text){
-  const rows=[]; let row=[], cur="", q=false;
-  for(let i=0;i<text.length;i++){
-    const c=text[i];
-    if(q){ if(c==='"'){ if(text[i+1]==='"'){cur+='"';i++;} else q=false; } else cur+=c; }
-    else{
-      if(c==='"')q=true;
-      else if(c===','){row.push(cur);cur="";}
-      else if(c==='\n'){row.push(cur);rows.push(row);row=[];cur="";}
-      else if(c==='\r'){}
-      else cur+=c;
-    }
-  }
-  if(cur.length||row.length){row.push(cur);rows.push(row);}
-  return rows;
-}
-function esc(s){return (s||"").replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
-function kpi(v,l,cls){return `<div class="kpi ${cls}"><div class="v">${v.toLocaleString('pt-BR')}</div><div class="l">${l}</div></div>`;}
+function parseCSV(t){const rows=[];let row=[],cur="",q=false;for(let i=0;i<t.length;i++){const c=t[i];if(q){if(c==='"'){if(t[i+1]==='"'){cur+='"';i++}else q=false}else cur+=c}else{if(c==='"')q=true;else if(c===','){row.push(cur);cur=""}else if(c==='\n'){row.push(cur);rows.push(row);row=[];cur=""}else if(c==='\r'){}else cur+=c}}if(cur.length||row.length){row.push(cur);rows.push(row)}return rows}
+function esc(s){return(s||"").replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function kpi(v,l,cls){return `<div class="kpi ${cls||''}"><div class="v">${(+v).toLocaleString('pt-BR')}</div><div class="l">${l}</div></div>`}
 
-let ELEG=[], iCls,iNome,iTxt,iRel,iAcao,iAcaoR,iPlat,iPerma,iLink,iData,iPost,iCid;
-
+let ROWS=[],I={},TAB="RESP";
 function linkDe(r){
-  const plat=(r[iPlat]||"").trim().toLowerCase();
-  const lr=(r[iLink]||"").trim();
-  if(lr.startsWith("http")) return {url:lr, label:(plat==="facebook"?"Ver comentário":"Abrir post"), ig:plat!=="facebook"};
-  const post=(r[iPost]||"").trim(), cid=(r[iCid]||"").trim();
-  if(plat==="facebook" && post && cid)
-    return {url:`https://www.facebook.com/${PAGE_ID}_${post}?comment_id=${post}_${cid}`, label:"Ver comentário", ig:false};
-  const perma=(r[iPerma]||"").trim();
-  if(perma.startsWith("http")) return {url:perma, label:"Abrir post", ig:true};
-  return {url:"", label:"", ig:false};
+  const plat=(r[I.plat]||"").trim().toLowerCase();
+  const lr=(r[I.link]||"").trim(),post=(r[I.post]||"").trim(),cid=(r[I.cid]||"").trim(),perma=(r[I.perma]||"").trim();
+  if(plat==="facebook"){
+    if(lr.startsWith("http"))return{url:lr,label:"Ver comentário",ig:false};
+    if(post&&cid)return{url:`https://www.facebook.com/${PAGE_ID}_${post}?comment_id=${post}_${cid}`,label:"Ver comentário",ig:false};
+    return{url:"",label:"",ig:false};
+  }
+  if(perma.startsWith("http")&&cid)return{url:`${perma.replace(/\/$/,"")}/c/${cid}/`,label:"Ver comentário",ig:true};
+  if(perma.startsWith("http"))return{url:perma,label:"Abrir post",ig:true};
+  return{url:"",label:"",ig:false};
 }
-function statusDe(r){
-  const ar=(r[iAcaoR]||"").trim().toUpperCase();
-  if(ar==="RESPONDIDO")return "RESPONDIDO";
-  const a=(r[iAcao]||"").trim().toUpperCase();
-  if(a.startsWith("ERRO"))return "ERRO";
-  if(a==="PENDENTE")return "PENDENTE";
-  if(a==="CURTIDO")return "CURTIDO";
-  if(a==="IGNORADO")return "IGNORADO";
-  return a||"—";
+function fonteDe(r){
+  const f=(r[I.fonte]||"").trim().toUpperCase();
+  if(f.includes("MANYCHAT"))return "MANYCHAT";
+  // resposta gerada pelo Cérebro IA (n8n): tem texto em relevancia_score e acao_realizada=RESPONDIDO
+  const resp=(r[I.resp]||"").trim();
+  if(resp && isNaN(resp))return "N8N";
+  return "";
 }
-function render(filtro){
-  const feed=document.getElementById("feed");
-  let list=ELEG.slice();
-  if(filtro==="RESPONDIDO")list=list.filter(r=>statusDe(r)==="RESPONDIDO");
-  else if(filtro==="PENDENTE")list=list.filter(r=>statusDe(r)==="PENDENTE");
+function temResposta(r){const s=(r[I.resp]||"").trim();return s && isNaN(s)}
+
+function render(){
+  const q=(document.getElementById("busca").value||"").toLowerCase();
+  const fp=document.getElementById("fPlat").value;
+  let list=ROWS.filter(r=>{
+    const plat=(r[I.plat]||"").trim();
+    if(fp&&plat!==fp)return false;
+    if(TAB==="RESP"&&!temResposta(r))return false;
+    if(TAB==="MANYCHAT"&&fonteDe(r)!=="MANYCHAT")return false;
+    if(TAB==="N8N"&&fonteDe(r)!=="N8N")return false;
+    if(q){const t=((r[I.nome]||"")+(r[I.txt]||"")).toLowerCase();if(!t.includes(q))return false}
+    return true;
+  });
   list.reverse();
-  if(!list.length){feed.innerHTML='<div class="loading">Nada aqui ainda.</div>';return;}
+  const feed=document.getElementById("feed");
+  if(!list.length){feed.innerHTML='<div class="loading">Nada aqui ainda nesta aba.</div>';return}
   feed.innerHTML=list.slice(0,150).map(r=>{
-    const cls=(r[iCls]||"").trim().toUpperCase();
-    const nome=(r[iNome]||"Anônimo").trim()||"Anônimo";
-    const plat=(r[iPlat]||"").trim();
-    const txt=(r[iTxt]||"").trim();
-    const rel=(r[iRel]||"").trim();
-    const dt=(r[iData]||"").trim().slice(0,10);
-    const st=statusDe(r);
+    const cls=(r[I.cls]||"").trim().toUpperCase(),nome=(r[I.nome]||"Anônimo").trim()||"Anônimo";
+    const plat=(r[I.plat]||"").trim(),txt=(r[I.txt]||"").trim(),dt=(r[I.data]||"").trim().slice(0,10);
+    const resp=(r[I.resp]||"").trim(),fonte=fonteDe(r);
     const L=linkDe(r);
-    const linkHtml=L.url
-      ? `<a class="link ${L.ig?'ig':''}" href="${esc(L.url)}" target="_blank" rel="noopener">🔗 ${L.label}</a>`
-      : `<span class="nolink">sem link disponível</span>`;
-    const relHtml=rel&&!isNaN(rel)?`<span class="rel">★ ${rel}</span>`:"";
-    return `<div class="item ${cls}">
-      <div class="ihead"><b>${esc(nome)}</b> <span class="tag ${cls}">${cls}</span> <span class="st ${st}">${st}</span> <span class="plat">${esc(plat)} · ${dt}</span></div>
-      <div class="txt">${esc(txt)}</div>
-      <div class="meta">${relHtml}${linkHtml}</div>
-    </div>`;
+    const lk=L.url?`<a class="link ${L.ig?'ig':''}" href="${esc(L.url)}" target="_blank" rel="noopener">🔗 ${L.label}</a>`:`<span class="nolink">sem link</span>`;
+    const srcTag=fonte?`<span class="src ${fonte}">${fonte==="N8N"?"Cérebro IA (n8n)":"ManyChat"}</span>`:"";
+    const respHtml=(resp&&isNaN(resp))?`<div class="resp">💬 <b>Resposta:</b> ${esc(resp)}</div>`:"";
+    return `<div class="item ${cls}"><div class="ihead"><b>${esc(nome)}</b> <span class="tag ${cls}">${cls||'—'}</span> ${srcTag} <span class="plat">${esc(plat)} · ${dt}</span></div><div class="txt">${esc(txt)}</div>${respHtml}<div class="meta">${lk}</div></div>`;
   }).join("");
 }
 
 function carregar(){
-  fetch(URL).then(r=>{if(!r.ok)throw new Error("HTTP "+r.status);return r.text();}).then(csv=>{
-    const rows=parseCSV(csv);
-    const head=rows[0].map(h=>h.trim());
-    const idx=n=>head.indexOf(n);
-    iCls=idx("classificacao"); iNome=idx("nome"); iTxt=idx("comentario");
-    iRel=idx("relevancia"); iAcao=idx("acao"); iAcaoR=idx("acao_realizada");
-    iPlat=idx("plataforma"); iPerma=idx("permalink"); iLink=idx("link_responder");
-    iData=idx("data_hora"); iPost=idx("post_id"); iCid=idx("comment_id");
+  fetch(CSV("COMENTARIOS")).then(r=>{if(!r.ok)throw new Error("HTTP "+r.status);return r.text()}).then(csv=>{
+    const rows=parseCSV(csv),head=rows[0].map(h=>h.trim()),ix=n=>head.indexOf(n);
+    I={cls:ix("classificacao"),nome:ix("nome"),txt:ix("comentario"),plat:ix("plataforma"),
+       data:ix("data_hora"),resp:ix("relevancia_score"),fonte:ix("fonte"),acaoR:ix("acao_realizada"),
+       link:ix("link_responder"),perma:ix("permalink"),post:ix("post_id"),cid:ix("comment_id")};
+    ROWS=rows.slice(1).filter(r=>r.length>5);
 
-    const data=rows.slice(1).filter(r=>r.length>5);
-    ELEG=data.filter(r=>ALVO.includes((r[iCls]||"").trim().toUpperCase()));
-
-    let apoiador=0,contra=0,resp=0,pend=0;
-    data.forEach(r=>{
-      const c=(r[iCls]||"").trim().toUpperCase();
-      if(c==="APOIADOR"||c==="VOTO_DECLARADO")apoiador++;
-      if(c==="CONTRA")contra++;
-    });
-    ELEG.forEach(r=>{const s=statusDe(r); if(s==="RESPONDIDO")resp++; else if(s==="PENDENTE")pend++;});
-
-    document.getElementById("sub").textContent=
-      `Atualizado ${new Date().toLocaleString('pt-BR')} · ${data.length.toLocaleString('pt-BR')} comentários na base`;
-
+    const respN8N=ROWS.filter(r=>fonteDe(r)==="N8N").length;
+    const respMC=ROWS.filter(r=>fonteDe(r)==="MANYCHAT").length;
+    const totalResp=ROWS.filter(temResposta).length;
+    document.getElementById("sub").textContent=`Atualizado ${new Date().toLocaleString('pt-BR')} · ${ROWS.length.toLocaleString('pt-BR')} comentários`;
     document.getElementById("kpis").innerHTML=
-      kpi(resp,"Respondidos","verde")+
-      kpi(pend,"Pendentes na fila","amar")+
-      kpi(apoiador,"Apoiadores","verde")+
-      kpi(ELEG.length,"Elegíveis p/ resposta","rox")+
-      kpi(contra,"Contrários","verm")+
-      kpi(data.length,"Total captado","azul");
+      kpi(totalResp,"Respostas enviadas","verde")+
+      kpi(respN8N,"Cérebro IA (n8n)","rox")+
+      kpi(respMC,"ManyChat","rosa")+
+      kpi(ROWS.length,"Total captado","");
 
-    const tabs=[["ALL","Todos elegíveis",ELEG.length],["PENDENTE","Pendentes",pend],["RESPONDIDO","Respondidos",resp]];
-    document.getElementById("tabs").innerHTML=tabs.map((t,i)=>
-      `<div class="tab ${i===0?'active':''}" data-f="${t[0]}">${t[1]} <span class="n">${t[2]}</span></div>`).join("");
-    document.querySelectorAll(".tab").forEach(el=>el.onclick=()=>{
-      document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
-      el.classList.add("active"); render(el.dataset.f);
-    });
-    render("ALL");
+    const tabs=[["RESP","Respostas enviadas",totalResp],["N8N","Cérebro IA (n8n)",respN8N],["MANYCHAT","ManyChat",respMC]];
+    document.getElementById("tabs").innerHTML=tabs.map((t,i)=>`<div class="tab ${i===0?'active':''}" data-t="${t[0]}">${t[1]} (${t[2]})</div>`).join("");
+    document.querySelectorAll(".tab").forEach(el=>el.onclick=()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));el.classList.add("active");TAB=el.dataset.t;render()});
+    document.getElementById("busca").oninput=render;
+    document.getElementById("fPlat").onchange=render;
+    render();
   }).catch(e=>{
     document.getElementById("sub").textContent="";
-    const err=document.getElementById("err");
-    err.classList.remove("hidden");
-    err.innerHTML=`⚠️ Não consegui ler a planilha ao vivo (${esc(e.message)}).<br>
-    <b>Isto pode acontecer só no preview do app (sandbox).</b> Hospedado no GitHub Pages costuma funcionar.`;
+    const err=document.getElementById("err");err.classList.remove("hidden");
+    err.innerHTML=`⚠️ Não consegui ler a planilha (${esc(e.message)}). No preview do app pode ser bloqueado; hospedado funciona.`;
     document.getElementById("feed").innerHTML="";
   });
 }
-
-/* se já estava logado nesta sessão, carrega direto */
-if(storeGet("qg_ok")==="1") carregar();
+if(sGet("qg_ok")==="1")carregar();
 </script>
 </body>
 </html>
