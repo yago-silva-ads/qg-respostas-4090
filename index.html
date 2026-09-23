@@ -12,6 +12,15 @@
   }
   *{box-sizing:border-box;margin:0;padding:0}
   body{font-family:system-ui,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--txt);padding:20px;max-width:1100px;margin:0 auto}
+  /* ----- tela de login ----- */
+  #gate{position:fixed;inset:0;background:#070b16;display:flex;align-items:center;justify-content:center;z-index:999}
+  .gatebox{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:34px 30px;width:340px;max-width:90vw;text-align:center}
+  .gatebox h2{font-size:18px;margin-bottom:6px}
+  .gatebox p{color:var(--mut);font-size:13px;margin-bottom:18px}
+  .gatebox input{width:100%;padding:12px;border-radius:10px;border:1px solid var(--line);background:#0e1424;color:var(--txt);font-size:15px;margin-bottom:12px}
+  .gatebox button{width:100%;padding:12px;border:0;border-radius:10px;background:var(--azul);color:#fff;font-size:15px;font-weight:700;cursor:pointer}
+  .gatebox .msg{color:var(--verm);font-size:12px;height:16px;margin-top:8px}
+  #app{display:none}
   .top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:6px}
   h1{font-size:22px;display:flex;align-items:center;gap:10px}
   .live{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--verde);border:1px solid var(--verde);border-radius:20px;padding:3px 10px}
@@ -58,22 +67,52 @@
 </style>
 </head>
 <body>
-  <div class="top">
-    <h1>🗳️ QG Respostas 4090</h1>
-    <span class="live"><span class="dot"></span> LIVE</span>
-  </div>
-  <div class="sub" id="sub">Carregando dados da planilha…</div>
 
-  <div class="flow">
-    🤖 <b>Fluxo automático ativo</b> — o Cérebro IA lê comentários, classifica com IA e responde os apoiadores <b>a cada 30 min</b>. Painel em tempo real direto da planilha.
+  <!-- ===== TELA DE LOGIN ===== -->
+  <div id="gate">
+    <div class="gatebox">
+      <h2>🔒 QG Respostas 4090</h2>
+      <p>Painel restrito da campanha. Digite a senha de acesso.</p>
+      <input type="password" id="pwd" placeholder="Senha" autocomplete="current-password">
+      <button id="enter">Entrar</button>
+      <div class="msg" id="gmsg"></div>
+    </div>
   </div>
 
-  <div class="err hidden" id="err"></div>
-  <div class="kpis" id="kpis"></div>
-  <div class="tabs" id="tabs"></div>
-  <div id="feed"><div class="loading">⏳ Buscando comentários…</div></div>
+  <!-- ===== APP ===== -->
+  <div id="app">
+    <div class="top">
+      <h1>🗳️ QG Respostas 4090</h1>
+      <span class="live"><span class="dot"></span> LIVE</span>
+    </div>
+    <div class="sub" id="sub">Carregando dados da planilha…</div>
+    <div class="flow">
+      🤖 <b>Fluxo automático ativo</b> — o Cérebro IA lê comentários, classifica com IA e responde os apoiadores <b>a cada 30 min</b>. Painel em tempo real direto da planilha.
+    </div>
+    <div class="err hidden" id="err"></div>
+    <div class="kpis" id="kpis"></div>
+    <div class="tabs" id="tabs"></div>
+    <div id="feed"><div class="loading">⏳ Buscando comentários…</div></div>
+  </div>
 
 <script>
+/* ===== LOGIN (senha simples, igual ao site anterior) ===== */
+const SENHA = "luciano4090";
+const gate=document.getElementById("gate"), app=document.getElementById("app");
+function tentarEntrar(){
+  const v=document.getElementById("pwd").value.trim();
+  if(v===SENHA){
+    sessionStorage.setItem("qg_ok","1");
+    gate.style.display="none"; app.style.display="block"; carregar();
+  }else{
+    document.getElementById("gmsg").textContent="Senha incorreta.";
+  }
+}
+document.getElementById("enter").onclick=tentarEntrar;
+document.getElementById("pwd").addEventListener("keydown",e=>{if(e.key==="Enter")tentarEntrar();});
+if(sessionStorage.getItem("qg_ok")==="1"){gate.style.display="none";app.style.display="block";}
+
+/* ===== DADOS ===== */
 const SHEET_ID = "1XqxOih0RSSMWXA7X3DPYOt3_xk0jK9yjlLpq0-qsyME";
 const TAB = "COMENTARIOS";
 const URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(TAB)}`;
@@ -101,9 +140,6 @@ function kpi(v,l,cls){return `<div class="kpi ${cls}"><div class="v">${v.toLocal
 
 let ELEG=[], iCls,iNome,iTxt,iRel,iAcao,iAcaoR,iPlat,iPerma,iLink,iData,iPost,iCid;
 
-// Melhor link possível por plataforma.
-// Facebook -> link DIRETO ao comentário (link_responder pronto, ou post_id+comment_id).
-// Instagram -> a Meta NÃO expõe deep link a comentário; abre o post/reel.
 function linkDe(r){
   const plat=(r[iPlat]||"").trim().toLowerCase();
   const lr=(r[iLink]||"").trim();
@@ -115,7 +151,6 @@ function linkDe(r){
   if(perma.startsWith("http")) return {url:perma, label:"Abrir post", ig:true};
   return {url:"", label:"", ig:false};
 }
-
 function statusDe(r){
   const ar=(r[iAcaoR]||"").trim().toUpperCase();
   if(ar==="RESPONDIDO")return "RESPONDIDO";
@@ -126,7 +161,6 @@ function statusDe(r){
   if(a==="IGNORADO")return "IGNORADO";
   return a||"—";
 }
-
 function render(filtro){
   const feed=document.getElementById("feed");
   let list=ELEG.slice();
@@ -155,55 +189,58 @@ function render(filtro){
   }).join("");
 }
 
-fetch(URL).then(r=>{if(!r.ok)throw new Error("HTTP "+r.status);return r.text();}).then(csv=>{
-  const rows=parseCSV(csv);
-  const head=rows[0].map(h=>h.trim());
-  const idx=n=>head.indexOf(n);
-  iCls=idx("classificacao"); iNome=idx("nome"); iTxt=idx("comentario");
-  iRel=idx("relevancia"); iAcao=idx("acao"); iAcaoR=idx("acao_realizada");
-  iPlat=idx("plataforma"); iPerma=idx("permalink"); iLink=idx("link_responder");
-  iData=idx("data_hora"); iPost=idx("post_id"); iCid=idx("comment_id");
+function carregar(){
+  fetch(URL).then(r=>{if(!r.ok)throw new Error("HTTP "+r.status);return r.text();}).then(csv=>{
+    const rows=parseCSV(csv);
+    const head=rows[0].map(h=>h.trim());
+    const idx=n=>head.indexOf(n);
+    iCls=idx("classificacao"); iNome=idx("nome"); iTxt=idx("comentario");
+    iRel=idx("relevancia"); iAcao=idx("acao"); iAcaoR=idx("acao_realizada");
+    iPlat=idx("plataforma"); iPerma=idx("permalink"); iLink=idx("link_responder");
+    iData=idx("data_hora"); iPost=idx("post_id"); iCid=idx("comment_id");
 
-  const data=rows.slice(1).filter(r=>r.length>5);
-  ELEG=data.filter(r=>ALVO.includes((r[iCls]||"").trim().toUpperCase()));
+    const data=rows.slice(1).filter(r=>r.length>5);
+    ELEG=data.filter(r=>ALVO.includes((r[iCls]||"").trim().toUpperCase()));
 
-  let apoiador=0,contra=0,resp=0,pend=0;
-  data.forEach(r=>{
-    const c=(r[iCls]||"").trim().toUpperCase();
-    if(c==="APOIADOR"||c==="VOTO_DECLARADO")apoiador++;
-    if(c==="CONTRA")contra++;
+    let apoiador=0,contra=0,resp=0,pend=0;
+    data.forEach(r=>{
+      const c=(r[iCls]||"").trim().toUpperCase();
+      if(c==="APOIADOR"||c==="VOTO_DECLARADO")apoiador++;
+      if(c==="CONTRA")contra++;
+    });
+    ELEG.forEach(r=>{const s=statusDe(r); if(s==="RESPONDIDO")resp++; else if(s==="PENDENTE")pend++;});
+
+    document.getElementById("sub").textContent=
+      `Atualizado ${new Date().toLocaleString('pt-BR')} · ${data.length.toLocaleString('pt-BR')} comentários na base`;
+
+    document.getElementById("kpis").innerHTML=
+      kpi(resp,"Respondidos","verde")+
+      kpi(pend,"Pendentes na fila","amar")+
+      kpi(apoiador,"Apoiadores","verde")+
+      kpi(ELEG.length,"Elegíveis p/ resposta","rox")+
+      kpi(contra,"Contrários","verm")+
+      kpi(data.length,"Total captado","azul");
+
+    const tabs=[["ALL","Todos elegíveis",ELEG.length],["PENDENTE","Pendentes",pend],["RESPONDIDO","Respondidos",resp]];
+    document.getElementById("tabs").innerHTML=tabs.map((t,i)=>
+      `<div class="tab ${i===0?'active':''}" data-f="${t[0]}">${t[1]} <span class="n">${t[2]}</span></div>`).join("");
+    document.querySelectorAll(".tab").forEach(el=>el.onclick=()=>{
+      document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+      el.classList.add("active"); render(el.dataset.f);
+    });
+    render("ALL");
+  }).catch(e=>{
+    document.getElementById("sub").textContent="";
+    const err=document.getElementById("err");
+    err.classList.remove("hidden");
+    err.innerHTML=`⚠️ Não consegui ler a planilha ao vivo (${esc(e.message)}).<br>
+    <b>Isto pode acontecer só no preview do app (sandbox).</b> Hospedado no GitHub Pages costuma funcionar.`;
+    document.getElementById("feed").innerHTML="";
   });
-  ELEG.forEach(r=>{const s=statusDe(r); if(s==="RESPONDIDO")resp++; else if(s==="PENDENTE")pend++;});
+}
 
-  document.getElementById("sub").textContent=
-    `Atualizado ${new Date().toLocaleString('pt-BR')} · ${data.length.toLocaleString('pt-BR')} comentários na base`;
-
-  document.getElementById("kpis").innerHTML=
-    kpi(resp,"Respondidos","verde")+
-    kpi(pend,"Pendentes na fila","amar")+
-    kpi(apoiador,"Apoiadores","verde")+
-    kpi(ELEG.length,"Elegíveis p/ resposta","rox")+
-    kpi(contra,"Contrários","verm")+
-    kpi(data.length,"Total captado","azul");
-
-  const tabs=[["ALL","Todos elegíveis",ELEG.length],["PENDENTE","Pendentes",pend],["RESPONDIDO","Respondidos",resp]];
-  document.getElementById("tabs").innerHTML=tabs.map((t,i)=>
-    `<div class="tab ${i===0?'active':''}" data-f="${t[0]}">${t[1]} <span class="n">${t[2]}</span></div>`).join("");
-  document.querySelectorAll(".tab").forEach(el=>el.onclick=()=>{
-    document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
-    el.classList.add("active"); render(el.dataset.f);
-  });
-
-  render("ALL");
-}).catch(e=>{
-  document.getElementById("sub").textContent="";
-  const err=document.getElementById("err");
-  err.classList.remove("hidden");
-  err.innerHTML=`⚠️ Não consegui ler a planilha ao vivo (${esc(e.message)}).<br>
-  <b>Isto pode acontecer só no preview do app (sandbox).</b> Hospedado no GitHub Pages costuma funcionar.<br>
-  Se persistir hospedado: Google Sheets → <b>Compartilhar → Acesso geral → Qualquer pessoa com o link → Leitor</b>.`;
-  document.getElementById("feed").innerHTML="";
-});
+/* se já estava logado nesta sessão, carrega direto */
+if(sessionStorage.getItem("qg_ok")==="1") carregar();
 </script>
 </body>
 </html>
