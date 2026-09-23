@@ -109,12 +109,11 @@ function linkDe(r){
 function fonteDe(r){
   const f=(r[I.fonte]||"").trim().toUpperCase();
   if(f.includes("MANYCHAT"))return "MANYCHAT";
-  // resposta gerada pelo Cérebro IA (n8n): tem texto em relevancia_score e acao_realizada=RESPONDIDO
-  const resp=(r[I.resp]||"").trim();
-  if(resp && isNaN(resp))return "N8N";
+  // resposta enviada pelo fluxo n8n / Cerebro IA
+  if((r[I.acaoR]||"").trim().toUpperCase()==="RESPONDIDO")return "N8N";
   return "";
 }
-function temResposta(r){const s=(r[I.resp]||"").trim();return s && isNaN(s)}
+function temResposta(r){return (r[I.acaoR]||"").trim().toUpperCase()==="RESPONDIDO"}
 
 function render(){
   const q=(document.getElementById("busca").value||"").toLowerCase();
